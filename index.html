@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>생산성 대시보드</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="app">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobileMenuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <h1 class="logo">생산성 대시보드</h1>
+                <nav class="nav" id="mainNav">
+                    <button class="nav-btn active" data-section="dashboard">대시보드</button>
+                    <button class="nav-btn" data-section="todos">할 일</button>
+                    <button class="nav-btn" data-section="calendar">캘린더</button>
+                    <button class="nav-btn" data-section="notes">노트</button>
+                    <button class="nav-btn" data-section="projects">프로젝트</button>
+                    <button class="nav-btn" data-section="journal">일기</button>
+                    <button class="nav-btn" data-section="portfolio">포트폴리오</button>
+                    <button class="nav-btn" data-section="analytics">분석</button>
+                    <button class="nav-btn" data-section="export">내보내기</button>
+                </nav>
+                <div class="header-actions">
+                    <button class="theme-toggle" id="themeToggle">🌙</button>
+                    <button class="sync-btn" id="syncBtn" title="데이터 동기화">💾</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="container">
+                <!-- Dashboard Overview -->
+                <section class="section active" id="dashboard">
+                    <div class="section-header">
+                        <h2>대시보드 개요</h2>
+                    </div>
+                    
+                    <div class="grid grid-4">
+                        <div class="stat-card">
+                            <div class="stat-icon">📋</div>
+                            <div class="stat-number" id="dashTotalTodos">0</div>
+                            <div class="stat-label">전체 할 일</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-number" id="dashCompletedTodos">0</div>
+                            <div class="stat-label">완료된 할 일</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📅</div>
+                            <div class="stat-number" id="dashTodayEvents">0</div>
+                            <div class="stat-label">오늘 일정</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🚀</div>
+                            <div class="stat-number" id="dashActiveProjects">0</div>
+                            <div class="stat-label">진행 중 프로젝트</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-2 mt-24">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>오늘의 할 일</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="todayTodos" class="today-todos-list"></div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>다가오는 일정</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="upcomingEvents" class="upcoming-events-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- To-Do Section -->
+                <section class="section" id="todos">
+                    <div class="section-header">
+                        <h2>할 일 & 목표 관리</h2>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <!-- To-Do List -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>할 일 목록</h3>
+                            </div>
+                            <div class="card-body">
+                                <form class="todo-form">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="todoText" placeholder="새로운 할 일을 입력하세요" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <select class="form-control" id="todoPriority">
+                                            <option value="low">낮음</option>
+                                            <option value="medium">보통</option>
+                                            <option value="high">높음</option>
+                                        </select>
+                                        <input type="date" class="form-control" id="todoDueDate" title="마감일">
+                                        <select class="form-control" id="todoCategory">
+                                            <option value="개발">개발</option>
+                                            <option value="업무">업무</option>
+                                            <option value="학습">학습</option>
+                                            <option value="개인">개인</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn--primary btn--full-width">추가</button>
+                                </form>
+                                <div class="todo-list" id="todoList"></div>
+                            </div>
+                        </div>
+
+                        <!-- Goals -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>목표 진행 상황</h3>
+                            </div>
+                            <div class="card-body">
+                                <form class="goal-form">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="goalTitle" placeholder="새로운 목표를 입력하세요" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <select class="form-control" id="goalCategory">
+                                            <option value="개발">개발</option>
+                                            <option value="프로젝트">프로젝트</option>
+                                            <option value="학습">학습</option>
+                                            <option value="건강">건강</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn--primary btn--full-width">목표 추가</button>
+                                </form>
+                                <div class="goals-list" id="goalsList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Calendar Section -->
+                <section class="section" id="calendar">
+                    <div class="section-header">
+                        <h2>캘린더 & 일정 관리</h2>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>새 일정 추가</h3>
+                            </div>
+                            <div class="card-body">
+                                <form class="event-form">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="eventTitle" placeholder="일정 제목" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <input type="date" class="form-control" id="eventDate" required>
+                                        <input type="time" class="form-control" id="eventTime" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <select class="form-control" id="eventCategory">
+                                            <option value="업무">업무</option>
+                                            <option value="개인">개인</option>
+                                            <option value="학습">학습</option>
+                                            <option value="미팅">미팅</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="eventIsActionable"> 실행 가능한 작업으로 설정
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="btn btn--primary btn--full-width">일정 추가</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>다가오는 일정</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="events-list" id="eventsList"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-24">
+                        <div class="card-header">
+                            <h3>
+                                <button class="btn btn--secondary btn--sm" id="prevMonth">‹</button>
+                                <span id="currentMonth">2025년 7월</span>
+                                <button class="btn btn--secondary btn--sm" id="nextMonth">›</button>
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="calendar-grid" id="calendarGrid"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Notes Section -->
+                <section class="section" id="notes">
+                    <div class="section-header">
+                        <h2>노트 & 지식 관리</h2>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>새 노트 작성</h3>
+                            </div>
+                            <div class="card-body">
+                                <form class="note-form">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="noteTitle" placeholder="노트 제목" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <select class="form-control" id="noteCategory">
+                                            <option value="개발">개발</option>
+                                            <option value="디자인">디자인</option>
+                                            <option value="회고">회고</option>
+                                            <option value="아이디어">아이디어</option>
+                                            <option value="학습">학습</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="noteTags" placeholder="태그 (쉼표로 구분)">
+                                    </div>
+                                    <div class="form-group">
+                                        <textarea class="form-control" id="noteContent" rows="4" placeholder="노트 내용을 입력하세요" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn--primary btn--full-width">노트 저장</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>노트 검색</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" id="noteSearch" placeholder="노트 검색...">
+                                </div>
+                                <div class="notes-list" id="notesList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Projects Section -->
+                <section class="section" id="projects">
+                    <div class="section-header">
+                        <h2>프로젝트 관리</h2>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>새 프로젝트 추가</h3>
+                            </div>
+                            <div class="card-body">
+                                <form class="project-form">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="projectName" placeholder="프로젝트 이름" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <textarea class="form-control" id="projectDescription" rows="3" placeholder="프로젝트 설명" required></textarea>
+                                    </div>
+                                    <div class="form-row">
+                                        <input type="date" class="form-control" id="projectStartDate" title="시작일">
+                                        <input type="date" class="form-control" id="projectEndDate" title="종료일">
+                                    </div>
+                                    <div class="form-group">
+                                        <select class="form-control" id="projectCategory">
+                                            <option value="개발">개발</option>
+                                            <option value="디자인">디자인</option>
+                                            <option value="마케팅">마케팅</option>
+                                            <option value="기타">기타</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn--primary btn--full-width">프로젝트 추가</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>프로젝트 목록</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="projects-list" id="projectsList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Journal Section -->
+                <section class="section" id="journal">
+                    <div class="section-header">
+                        <h2>일기 & 블로그</h2>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>새 일기 작성</h3>
+                            </div>
+                            <div class="card-body">
+                                <form class="journal-form">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="journalTitle" placeholder="일기 제목" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <select class="form-control" id="journalMood">
+                                            <option value="productive">생산적</option>
+                                            <option value="happy">행복</option>
+                                            <option value="reflective">성찰적</option>
+                                            <option value="challenging">도전적</option>
+                                            <option value="relaxed">편안</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="journalTags" placeholder="태그 (쉼표로 구분)">
+                                    </div>
+                                    <div class="form-group">
+                                        <textarea class="form-control" id="journalContent" rows="6" placeholder="오늘 하루는 어땠나요?" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn--primary btn--full-width">일기 저장</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>최근 일기</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="journals-list" id="journalsList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Portfolio Section -->
+                <section class="section" id="portfolio">
+                    <div class="section-header">
+                        <h2>포트폴리오</h2>
+                    </div>
+                    
+                    <div class="grid grid-1">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="portfolio-header">
+                                    <div class="portfolio-info">
+                                        <h1 id="portfolioName">홍길동</h1>
+                                        <p class="portfolio-title" id="portfolioTitle">웹 개발자</p>
+                                        <p class="portfolio-bio" id="portfolioBio">사용자 중심의 웹 애플리케이션을 개발하는 것을 좋아하는 개발자입니다.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="portfolio-grid">
+                                    <div class="portfolio-section">
+                                        <h3>연락처</h3>
+                                        <div class="contact-info">
+                                            <p>📧 <span id="portfolioEmail">hong@email.com</span></p>
+                                            <p>📱 <span id="portfolioPhone">010-1234-5678</span></p>
+                                            <p>📍 <span id="portfolioLocation">서울, 대한민국</span></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="portfolio-section">
+                                        <h3>기술 스택</h3>
+                                        <div class="skills-list" id="skillsList"></div>
+                                    </div>
+                                    
+                                    <div class="portfolio-section">
+                                        <h3>주요 프로젝트</h3>
+                                        <div class="portfolio-projects" id="portfolioProjects"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analytics Section -->
+                <section class="section" id="analytics">
+                    <div class="section-header">
+                        <h2>데이터 분석</h2>
+                    </div>
+                    
+                    <div class="grid grid-1">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>주간 완료된 할 일</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <div class="chart" id="weeklyChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-3 mt-24">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h4>총 할 일</h4>
+                                <div class="stat-number" id="totalTodos">0</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h4>완료된 할 일</h4>
+                                <div class="stat-number" id="completedTodos">0</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h4>진행 중인 프로젝트</h4>
+                                <div class="stat-number" id="activeProjects">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Export Section -->
+                <section class="section" id="export">
+                    <div class="section-header">
+                        <h2>데이터 내보내기 / 가져오기</h2>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Excel 내보내기</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="export-buttons">
+                                    <button class="btn btn--primary export-btn" data-type="todos">📋 할 일 목록</button>
+                                    <button class="btn btn--primary export-btn" data-type="events">📅 캘린더 일정</button>
+                                    <button class="btn btn--primary export-btn" data-type="notes">📝 노트</button>
+                                    <button class="btn btn--primary export-btn" data-type="projects">🚀 프로젝트</button>
+                                    <button class="btn btn--primary export-btn" data-type="journal">✍️ 일기</button>
+                                    <button class="btn btn--secondary export-btn" data-type="all">📊 전체 데이터</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>데이터 관리</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="data-management">
+                                    <button class="btn btn--secondary" id="exportBackup">💾 백업 파일 생성</button>
+                                    <input type="file" id="importBackup" accept=".json" style="display: none;">
+                                    <button class="btn btn--secondary" id="importBackupBtn">📁 백업 파일 가져오기</button>
+                                    <button class="btn btn--outline" id="clearData">🗑️ 모든 데이터 삭제</button>
+                                </div>
+                                <div class="storage-info">
+                                    <p><strong>저장된 데이터:</strong></p>
+                                    <div id="storageStats"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Modal for event to todo conversion -->
+        <div class="modal" id="eventToTodoModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>일정을 할 일로 변환</h3>
+                    <button class="modal-close" id="closeModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>이 일정을 실행 가능한 할 일로 변환하시겠습니까?</p>
+                    <div class="modal-event-info" id="modalEventInfo"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn--secondary" id="cancelConvert">취소</button>
+                    <button class="btn btn--primary" id="confirmConvert">변환</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
