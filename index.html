@@ -4,45 +4,52 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>디지털 명함</title>
+
 <link rel="stylesheet" href="style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-<!-- Firebase -->
 <script type="module" src="script.js"></script>
 </head>
+
 <body>
 
 <div class="container">
-    <div class="card" id="card">
-        <img id="profileImage" class="profile">
-        <h1 id="name"></h1>
-        <p id="intro"></p>
+  <div class="card" id="card">
 
-        <div class="links">
-            <a id="instagram" target="_blank">Instagram</a>
-            <a id="kakao" target="_blank">KakaoTalk</a>
-        </div>
+    <img id="profileImage" class="profile" src="">
+    <h1 id="name">이름</h1>
+    <p id="intro">소개</p>
 
-        <div class="career">
-            <h3>약력</h3>
-            <p id="career"></p>
-        </div>
-
-        <button onclick="downloadImage()">이미지 저장</button>
-        <button onclick="location.href='community.html'">소통</button>
+    <div class="links">
+      <a id="instagram" target="_blank">Instagram</a>
+      <a id="kakao" target="_blank">KakaoTalk</a>
     </div>
+
+    <div class="career">
+      <h3>약력</h3>
+      <p id="career"></p>
+    </div>
+
+    <button onclick="downloadImage()">이미지 저장</button>
+    <button onclick="location.href='community.html'">소통 페이지</button>
+
+  </div>
 </div>
 
 <!-- 관리자 패널 -->
 <div id="adminPanel" class="admin-panel">
-    <h2>관리자 모드</h2>
-    <input id="editName" placeholder="이름">
-    <input id="editIntro" placeholder="소개">
-    <input id="editCareer" placeholder="약력">
-    <input id="editInstagram" placeholder="인스타 링크">
-    <input id="editKakao" placeholder="카카오 링크">
-    <input type="file" id="editImage">
-    <button onclick="saveAdmin()">저장</button>
+
+  <h2>관리자 모드</h2>
+
+  <input id="editName" placeholder="이름">
+  <input id="editIntro" placeholder="소개">
+  <input id="editCareer" placeholder="약력">
+  <input id="editInstagram" placeholder="인스타 링크">
+  <input id="editKakao" placeholder="카카오 링크">
+  <input type="file" id="editImage">
+
+  <button onclick="saveAdmin()">저장</button>
+  <button onclick="closeAdmin()">닫기</button>
+
 </div>
 
 </body>
