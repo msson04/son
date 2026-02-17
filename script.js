@@ -1,7 +1,3 @@
-/* =========================
-   Firebase 설정
-========================= */
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore,
@@ -11,8 +7,14 @@ import {
   doc,
   setDoc,
   getDoc,
-  updateDoc
+  updateDoc,
+  query,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* =========================
+   Firebase 설정
+========================= */
 
 const firebaseConfig = {
   apiKey: "AIzaSyClbO21LSFjD2airEVxUQoahH9cxlO1U4g",
@@ -28,7 +30,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 /* =========================
-   명함 데이터 불러오기
+   명함 불러오기
 ========================= */
 
 async function loadCard() {
@@ -37,18 +39,12 @@ async function loadCard() {
 
   if (docSnap.exists()) {
     const data = docSnap.data();
-    if (document.getElementById("name"))
-      document.getElementById("name").innerText = data.name || "";
-    if (document.getElementById("intro"))
-      document.getElementById("intro").innerText = data.intro || "";
-    if (document.getElementById("career"))
-      document.getElementById("career").innerText = data.career || "";
-    if (document.getElementById("instagram"))
-      document.getElementById("instagram").href = data.instagram || "#";
-    if (document.getElementById("kakao"))
-      document.getElementById("kakao").href = data.kakao || "#";
-    if (document.getElementById("profileImage"))
-      document.getElementById("profileImage").src = data.image || "";
+    if (document.getElementById("name")) document.getElementById("name").innerText = data.name || "";
+    if (document.getElementById("intro")) document.getElementById("intro").innerText = data.intro || "";
+    if (document.getElementById("career")) document.getElementById("career").innerText = data.career || "";
+    if (document.getElementById("instagram")) document.getElementById("instagram").href = data.instagram || "#";
+    if (document.getElementById("kakao")) document.getElementById("kakao").href = data.kakao || "#";
+    if (document.getElementById("profileImage")) document.getElementById("profileImage").src = data.image || "";
   }
 }
 
@@ -83,18 +79,16 @@ async function saveCardData(imageBase64) {
     kakao: document.getElementById("editKakao")?.value || ""
   };
 
-  if (imageBase64) {
-    data.image = imageBase64;
-  }
+  if (imageBase64) data.image = imageBase64;
 
   await setDoc(docRef, data, { merge: true });
 
-  alert("✅ 저장 완료");
+  alert("저장 완료");
   location.reload();
 }
 
 /* =========================
-   명함 이미지 저장
+   이미지 저장
 ========================= */
 
 window.downloadImage = function () {
@@ -110,7 +104,7 @@ window.downloadImage = function () {
 };
 
 /* =========================
-   게시글 추가
+   게시판
 ========================= */
 
 window.addPost = async function () {
@@ -131,10 +125,6 @@ window.addPost = async function () {
 
   document.getElementById("content").value = "";
 };
-
-/* =========================
-   답글 추가
-========================= */
 
 window.addReply = async function (postId) {
   const replyInput = document.getElementById("reply-" + postId);
@@ -157,15 +147,13 @@ window.addReply = async function (postId) {
   }
 };
 
-/* =========================
-   게시글 실시간 로드
-========================= */
-
 function loadPosts() {
   const postList = document.getElementById("postList");
   if (!postList) return;
 
-  onSnapshot(collection(db, "posts"), (snapshot) => {
+  const q = query(collection(db, "posts"), orderBy("date", "desc"));
+
+  onSnapshot(q, (snapshot) => {
     postList.innerHTML = "";
 
     snapshot.forEach((docSnap) => {
@@ -182,13 +170,12 @@ function loadPosts() {
         <br><br>
         <input type="text" id="reply-${postId}" placeholder="답글 작성">
         <button onclick="addReply('${postId}')">답글</button>
-        <div class="reply-box" id="replies-${postId}"></div>
+        <div id="replies-${postId}"></div>
       `;
 
       postList.appendChild(div);
 
       const replyBox = document.getElementById("replies-" + postId);
-
       (data.replies || []).forEach((reply) => {
         const p = document.createElement("p");
         p.innerHTML = `↳ <b>${reply.writer}</b> : ${reply.content}`;
@@ -199,37 +186,45 @@ function loadPosts() {
 }
 
 /* =========================
-   🔐 관리자 단축키
-   Shift + 1 + 2
+   관리자 단축키
 ========================= */
 
+let adminOpened = false;
 let shiftPressed = false;
 let onePressed = false;
 let twoPressed = false;
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Shift") shiftPressed = true;
-  if (event.key === "!") onePressed = true;  // Shift + 1
-  if (event.key === "@") twoPressed = true;  // Shift + 2
+  if (event.key === "!") onePressed = true;
+  if (event.key === "@") twoPressed = true;
 
-  if (shiftPressed && onePressed && twoPressed) {
+  if (shiftPressed && onePressed && twoPressed && !adminOpened) {
     const panel = document.getElementById("adminPanel");
     if (panel) {
       panel.style.display = "block";
-      alert("🔐 관리자 모드 진입");
+      adminOpened = true;
     }
   }
+
+  if (event.key === "Escape") closeAdmin();
 });
 
-document.addEventListener("keyup", () => {
-  shiftPressed = false;
-  onePressed = false;
-  twoPressed = false;
+document.addEventListener("keyup", (event) => {
+  if (event.key === "Shift") shiftPressed = false;
+  if (event.key === "!") onePressed = false;
+  if (event.key === "@") twoPressed = false;
 });
 
-/* =========================
-   페이지 로드
-========================= */
+window.closeAdmin = function () {
+  const panel = document.getElementById("adminPanel");
+  if (panel) {
+    panel.style.display = "none";
+    adminOpened = false;
+  }
+};
+
+/* ========================= */
 
 window.addEventListener("DOMContentLoaded", () => {
   loadCard();
